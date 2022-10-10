@@ -32,6 +32,14 @@ from bpy import props
 from bpy_extras.io_utils import ImportHelper
 
 @compatibility.make_annotations
+class PREF_OT_egg(bpy.types.AddonPreferences):
+    bl_idname = __name__
+    path = props.StringProperty(name="Location of Resources folder", subtype="DIR_PATH")
+
+    def draw(self, context):
+        self.layout.prop(self, "path")
+
+@compatibility.make_annotations
 class IMPORT_OT_egg(bpy.types.Operator, ImportHelper):
     """Import .egg Operator"""
     bl_idname = "import_scene.egg"
@@ -93,6 +101,7 @@ def menu_func(self, context):
 
 def register():
     bpy.utils.register_class(IMPORT_OT_egg)
+    bpy.utils.register_class(PREF_OT_egg)
 
     if bpy.app.version >= (2, 80):
         bpy.types.TOPBAR_MT_file_import.append(menu_func)
@@ -106,6 +115,7 @@ def unregister():
         bpy.types.INFO_MT_file_import.remove(menu_func)
 
     bpy.utils.unregister_class(IMPORT_OT_egg)
+    bpy.utils.unregister_class(PREF_OT_egg)
 
 if __name__ == "__main__":
     register()

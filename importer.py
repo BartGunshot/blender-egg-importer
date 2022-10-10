@@ -180,6 +180,7 @@ class EggContext:
 
     def load_image(self, path):
         """ Loads an image from disk as Blender image. """
+        prefs = bpy.context.preferences.addons[__name__.split('.')[0]].preferences
 
         if sys.platform == 'win32':
             # Convert an absolute Panda-style path to a Windows path.
@@ -187,7 +188,7 @@ class EggContext:
                 path = path.replace('/', '\\')
                 path = path[1].upper() + ':' + path[2:]
 
-        path = path.replace('/', os.sep)
+        path = prefs.path + path.replace('/', os.sep)
 
         # If it's a relative path, search in the location of the .egg first.
         if not os.path.isabs(path) and self.search_dir and os.path.exists(os.path.join(self.search_dir, path)):
