@@ -548,6 +548,18 @@ class EggMaterial:
                         bmat.node_tree.links.remove(alpha_out.links[0])
                     bmat.node_tree.links.new(alpha_out, color)
 
+            # If this texture has an alpha-file load it 
+            if texture.alpha_image:
+                bmat.blend_method = 'CLIP'
+                alpha_tex_node = bmat.node_tree.nodes.new("ShaderNodeTexImage")
+                alpha_tex_node.image = texture.alpha_image.texture.image
+                alpha_tex_node.extension = texture.alpha_image.texture.extension
+                alpha_color = alpha_tex_node.outputs['Color']
+
+                if alpha_out.is_linked:
+                    bmat.node_tree.links.remove(alpha_out.links[0])
+                bmat.node_tree.links.new(alpha_out, alpha_color)
+
             if texture.envtype in ('add', 'decal', 'blend', 'modulate', 'modulate_glow', 'modulate_gloss'):
                 if has_color and color_out.is_linked:
                     # We already have something mapped; add a mixing node.
@@ -784,6 +796,7 @@ class EggTexture:
     def __init__(self, name, image):
         self.texture = bpy.data.textures.new(name, 'IMAGE')
         self.texture.image = image
+        self.alpha_image = None
         self.name = name
         self.format = None
         self.envtype = 'modulate'
@@ -802,7 +815,7 @@ class EggTexture:
         if type in ('SCALAR', 'CHAR*'):
             name = name.lower()
 
-            if name == 'wrap':
+            if name in ('wrap', 'wrapu', 'wrapv'):
                 value = values[0].lower()
                 if value == 'repeat':
                     self.texture.extension = 'REPEAT'
@@ -828,6 +841,9 @@ class EggTexture:
             elif name == 'alpha':
                 if values[0].lower() == 'premultiplied':
                     self.texture.image.alpha_mode = 'PREMUL'
+
+            elif name == 'alpha-file':
+                self.alpha_image = EggTexture(name, context.load_image(values[0]))
 
             elif name == 'blend':
                 self.blend = values[0].lower()
